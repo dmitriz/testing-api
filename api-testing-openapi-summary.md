@@ -2,8 +2,10 @@
 
 ## 1. Introduction
 
-* **Purpose:** Consolidate discussions on using OpenAPI (Swagger) for API design, documentation, and contract testing.
-* **Focus:** Demonstrate testing a JavaScript function that builds an API request object against an OpenAPI contract without live API calls.
+* **Purpose:** Consolidate discussions on using OpenAPI (Swagger) for API design,
+  documentation, and contract testing.
+* **Focus:** Demonstrate testing a JavaScript function that builds an API request
+  object against an OpenAPI contract without live API calls.
 
 ## 2. Core Concepts
 
@@ -15,7 +17,8 @@
 
 ### 2.2. API Contract Testing
 
-* Definition: Verifying consumer and provider independently adhere to a shared contract.
+* Definition: Verifying consumer and provider independently adhere to a shared
+  contract.
 * Goal: Reliable integration, reducing need for extensive end-to-end tests.
 * Perspectives: Consumer-side and Provider-side.
 
@@ -25,16 +28,21 @@
 
 ## 3. Key Strategy: Validating Request Builder Functions
 
-* **Scenario:** Testing a function that prepares an Axios request configuration object (`reqObj`) but doesn't execute the HTTP call.
-* **Challenge:** Mapping `reqObj` (Axios config) to a standard HTTP request format for OpenAPI validators.
-  * Differences: `method` case, `url` vs. `path`, `params` (query), `data` (body), `headers` case.
-* **Solution:** Use a library (e.g., `openapi-backend` in Node.js) to validate the mapped `reqObj` components against the OpenAPI spec.
+* **Scenario:** Testing a function that prepares an Axios request configuration
+  object (`reqObj`) but doesn't execute the HTTP call.
+* **Challenge:** Mapping `reqObj` (Axios config) to a standard HTTP request
+  format for OpenAPI validators.
+  * Differences: `method` case, `url` vs. `path`, `params` (query), `data`
+    (body), `headers` case.
+* **Solution:** Use a library (e.g., `openapi-backend` in Node.js) to validate
+  the mapped `reqObj` components against the OpenAPI spec.
 
 ## 4. Detailed Example: Contract Testing a Request Builder
 
 ### 4.1. Scenario Overview
 
-* Test a JS function (e.g., `buildGetUserProfileRequest`) returning an Axios config.
+* Test a JS function (e.g., `buildGetUserProfileRequest`) returning an Axios
+  config.
 * Ensure this config would produce a compliant HTTP request.
 
 ### 4.2. File Structure
@@ -322,10 +330,14 @@ describe('Request Builder Contract Tests', () => {
 
 ## 5. Broader Application (e.g., LLM Registry)
 
-* This contract testing approach is valuable if any provider in a registry (like an LLM registry) exposes a standard REST API defined by an OpenAPI spec for which request objects are being built.
-* For SDK-based providers (e.g., Genkit), testing typically involves mocking the SDK's methods rather than HTTP contract validation.
+* This contract testing approach is valuable if any provider in a registry (like
+  an LLM registry) exposes a standard REST API defined by an OpenAPI spec for
+  which request objects are being built.
+* For SDK-based providers (e.g., Genkit), testing typically involves mocking the
+  SDK's methods rather than HTTP contract validation.
 
 ## 6. Conclusion
 
-* Validating request builder functions against an OpenAPI contract ensures structural correctness before network calls.
+* Validating request builder functions against an OpenAPI contract ensures
+  structural correctness before network calls.
 * This enhances reliability and helps catch integration issues early.
