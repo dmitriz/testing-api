@@ -197,11 +197,14 @@ module.exports = { buildGetUserProfileRequest, buildUpdateUserProfileRequest };
 
 #### 4.3.3. `tests/request-builder.contract.test.js`
 
-* **Purpose:** Jest test file using `openapi-backend` to validate `request-builder.js` output.
+* **Purpose:** Jest test file using `openapi-backend` to validate
+  `request-builder.js` output.
 * **Key Steps:**
-    1. Initialize `openapi-backend` with `api-spec.yaml`.
-    2. Helper function (`mapAxiosReqToValidationReq`) to translate Axios `reqObj` for validator.
-    3. Test cases: Call builder, map `reqObj`, use `api.validateRequest()`, assert validation.
+  1. Initialize `openapi-backend` with `api-spec.yaml`.
+  2. Helper function (`mapAxiosReqToValidationReq`) to translate Axios `reqObj`
+     for validator.
+  3. Test cases: Call builder, map `reqObj`, use `api.validateRequest()`, assert
+     validation.
 * **Content:**
 
 ```javascript
@@ -246,7 +249,9 @@ describe('Request Builder Contract Tests', () => {
         const reqObj = buildGetUserProfileRequest(userId, includeDetails);
         const validationReq = mapAxiosReqToValidationReq(reqObj);
         const validationResult = api.validateRequest(validationReq);
-        expect(validationResult.valid, `Validation Errors: ${JSON.stringify(validationResult.errors, null, 2)}`).toBe(true);
+        expect(validationResult.valid, 
+          `Validation Errors: ${JSON.stringify(validationResult.errors, null, 2)}`)
+          .toBe(true);
     });
 
     test('buildUpdateUserProfileRequest should produce a valid request object', () => {
@@ -255,7 +260,9 @@ describe('Request Builder Contract Tests', () => {
         const reqObj = buildUpdateUserProfileRequest(userId, profileData);
         const validationReq = mapAxiosReqToValidationReq(reqObj);
         const validationResult = api.validateRequest(validationReq);
-        expect(validationResult.valid, `Validation Errors: ${JSON.stringify(validationResult.errors, null, 2)}`).toBe(true);
+        expect(validationResult.valid, 
+          `Validation Errors: ${JSON.stringify(validationResult.errors, null, 2)}`)
+          .toBe(true);
     });
 
     test('buildUpdateUserProfileRequest with missing required body property should fail validation', () => {
