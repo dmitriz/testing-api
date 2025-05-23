@@ -1,6 +1,6 @@
 const OpenAPIBackend = require('openapi-backend').default;
 const path = require('path');
-const { buildGetUserProfileRequest, buildUpdateUserProfileRequest } = require('../src/request-builder');
+const { buildGetUserProfileRequest, buildUpdateUserProfileRequest } = require('./request-builder');
 
 describe('Request Builder Contract Tests', () => {
   let api;
