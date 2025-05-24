@@ -4,10 +4,11 @@ const { buildGetUserProfileRequest, buildUpdateUserProfileRequest } = require('.
 
 describe('Request Builder Contract Tests', () => {
   let api;
-  
-  beforeAll(async () => {
+    beforeAll(async () => {
     api = new OpenAPIBackend({ 
       definition: path.join(__dirname, '../api-spec.yaml'),
+      quick: true,
+      validate: true
     });
     await api.init();
     
@@ -15,104 +16,110 @@ describe('Request Builder Contract Tests', () => {
     api.register({
       notFound: () => ({ status: 404, message: 'Not found' }),
       validationFail: (c, req) => ({ status: 400, errors: c.validation.errors }),
-    });
-  });
-  function mapAxiosReqToValidationReq(reqObj) {
-    const url = new URL(reqObj.url);
-    // Extract query params from URL instead of using params object directly
+      getUserProfile: () => ({}),
+      updateUserProfile: () => ({})
+    });});
+
+  // Helper function to identify the operation and validate the request
+  function validateRequestAgainstSchema(reqObj) {
+    // Use the server URL from the OpenAPI definition as a base for parsing reqObj.url
+    // This handles both relative and absolute URLs in reqObj.url.
+    const baseUrl = (api.definition && api.definition.servers && api.definition.servers.length > 0 && api.definition.servers[0].url) 
+                    || 'http://localhost'; // Fallback base URL if not found in spec
+    const url = new URL(reqObj.url, baseUrl);
+    
+    // Remove the basePath (e.g., '/v1') from the path if present
+    let openapiPath = url.pathname;
+    const basePath = new URL(baseUrl).pathname.replace(/\/$/, ''); // Remove trailing slash
+    if (basePath && openapiPath.startsWith(basePath)) {
+      openapiPath = openapiPath.slice(basePath.length) || '/';
+    }
+
+    // Extract the path parameters
+    const userIdMatch = openapiPath.match(/\/users\/([^\/]+)\/profile/);
+    const userId = userIdMatch ? userIdMatch[1] : null;
+    
+    // Convert query parameters and handle booleans
     const queryParams = {};
     url.searchParams.forEach((value, key) => {
-      queryParams[key] = value === 'true' ? true : 
-                         value === 'false' ? false : 
-                         value;
+      if (key === 'includeDetails') {
+        queryParams[key] = value === 'true';
+      } else {
+        queryParams[key] = value;
+      }
     });
     
-    // Extract the path without the base URL and API version
-    // For example: https://api.example.com/v1/users/123/profile -> /users/123/profile
-    let path = url.pathname;
-    if (path.startsWith('/v1')) {
-      path = path.substring(3); // Remove the /v1 prefix
-    }
-    
-    return {
+    // Create a properly formatted request for OpenAPI validation
+    const req = {
       method: reqObj.method.toUpperCase(),
-      path,
-      query: Object.keys(queryParams).length > 0 ? queryParams : reqObj.params || {},
+      path: openapiPath, // Use the path relative to the OpenAPI base
+      query: queryParams,
       headers: reqObj.headers || {},
       body: reqObj.data,
     };
-  }
-  test('buildGetUserProfileRequest should produce a valid request object', () => {
-    const reqObj = buildGetUserProfileRequest('user123', true);
-    const validationReq = mapAxiosReqToValidationReq(reqObj);
     
-    // Create a simplified request object for validation
-    const simplifiedReq = {
-      method: 'GET',
-      path: '/users/{userId}/profile',
-      headers: validationReq.headers,
-      query: validationReq.query,
-      body: validationReq.body,
-      // Add path parameters explicitly
-      params: {
-        userId: 'user123'
+    try {
+      // First find the matching operation
+      const operation = api.matchOperation(req);
+      if (!operation) {
+        return {
+          valid: false,
+          errors: [{ message: `No matching operation found for ${req.method} ${req.path}` }]
+        };
       }
-    };
+
+      // Then validate the request with the found operation
+      const validationResult = api.validateRequest(req, operation); 
+
+      if (validationResult && validationResult.errors) { // Check for errors property
+        return {
+          valid: false,
+          errors: validationResult.errors 
+        };
+      }
+
+      return {
+        valid: true
+      };
+    } catch (error) {
+      return {
+        valid: false,
+        errors: [{ message: error.message }] 
+      };
+    }
+  }test('buildGetUserProfileRequest should produce a valid request object', () => {
+    const reqObj = buildGetUserProfileRequest('user123', true);
+    const validationResult = validateRequestAgainstSchema(reqObj);
     
-    // Find the operation by path pattern and method
-    const operationPath = Object.keys(api.document.paths).find(p => p === '/users/{userId}/profile');
-    const operation = operationPath ? api.document.paths[operationPath].get : null;
+    console.log('GET request:', JSON.stringify({
+      url: reqObj.url,
+      method: reqObj.method,
+      params: reqObj.params,
+      headers: reqObj.headers,
+    }, null, 2));
     
-    // Check if we have a valid operation
-    expect(operation).toBeTruthy();
+    console.log('GET validation result:', JSON.stringify(validationResult, null, 2));
     
-    if (operation) {
-      // Check if the parameters are valid according to the spec
-      const hasValidUserId = simplifiedReq.params && 
-                             simplifiedReq.params.userId && 
-                             typeof simplifiedReq.params.userId === 'string';
-      const hasValidIncludeDetails = simplifiedReq.query.includeDetails === true || 
-                                     simplifiedReq.query.includeDetails === false;
-      
-      expect(hasValidUserId).toBe(true);
-      expect(hasValidIncludeDetails).toBe(true);
+    expect(validationResult.valid).toBe(true);
+    if (!validationResult.valid) {
+      console.error('Validation errors:', validationResult.errors);
     }
   });  test('buildUpdateUserProfileRequest should produce a valid request object', () => {
     const reqObj = buildUpdateUserProfileRequest('user123', { name: 'Alice', details: { age: 30 } });
-    const validationReq = mapAxiosReqToValidationReq(reqObj);
+    const validationResult = validateRequestAgainstSchema(reqObj);
     
-    // Create a simplified request object for validation
-    const simplifiedReq = {
-      method: 'PUT',
-      path: '/users/{userId}/profile',
-      headers: validationReq.headers,
-      query: validationReq.query,
-      body: validationReq.body,
-      // Add path parameters explicitly
-      params: {
-        userId: 'user123'
-      }
-    };
+    console.log('PUT request:', JSON.stringify({
+      url: reqObj.url,
+      method: reqObj.method,
+      body: reqObj.data,
+      headers: reqObj.headers,
+    }, null, 2));
     
-    // Find the operation by path pattern and method
-    const operationPath = Object.keys(api.document.paths).find(p => p === '/users/{userId}/profile');
-    const operation = operationPath ? api.document.paths[operationPath].put : null;
+    console.log('PUT validation result:', JSON.stringify(validationResult, null, 2));
     
-    // Check if we have a valid operation
-    expect(operation).toBeTruthy();
-    
-    if (operation) {
-      // Check if the parameters and body are valid according to the spec
-      const hasValidUserId = simplifiedReq.params && 
-                             simplifiedReq.params.userId && 
-                             typeof simplifiedReq.params.userId === 'string';
-                             
-      const hasValidBody = simplifiedReq.body && 
-                          typeof simplifiedReq.body.name === 'string' &&
-                          (!simplifiedReq.body.details || typeof simplifiedReq.body.details === 'object');
-      
-      expect(hasValidUserId).toBe(true);
-      expect(hasValidBody).toBe(true);
+    expect(validationResult.valid).toBe(true);
+    if (!validationResult.valid) {
+      console.error('Validation errors:', validationResult.errors);
     }
   });
 });
