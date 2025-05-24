@@ -3,9 +3,9 @@ const BASE_URL = 'https://api.example.com/v1';
 function buildGetUserProfileRequest(userId, includeDetails) {
   let url = `${BASE_URL}/users/${encodeURIComponent(userId)}/profile`;
   
-  // Append query parameters to the URL if includeDetails is provided
-  if (includeDetails !== undefined) {
-    url += `?includeDetails=${includeDetails}`;
+  // Append query parameters to the URL if includeDetails is provided and not null
+  if (includeDetails !== undefined && includeDetails !== null) {
+    url += `?includeDetails=${encodeURIComponent(includeDetails)}`;
   }
   
   return {
