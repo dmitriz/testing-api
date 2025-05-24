@@ -8,6 +8,7 @@ paths:
   /users/{userId}/profile:
     get:
       summary: Get user profile
+      operationId: getUserProfile
       parameters:
         - name: userId
           in: path
@@ -36,6 +37,7 @@ paths:
                     nullable: true
     put:
       summary: Update user profile
+      operationId: updateUserProfile
       parameters:
         - name: userId
           in: path

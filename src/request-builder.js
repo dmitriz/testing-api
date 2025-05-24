@@ -1,20 +1,25 @@
 const BASE_URL = 'https://api.example.com/v1';
 
 function buildGetUserProfileRequest(userId, includeDetails) {
-  return {
+  const url = `${BASE_URL}/users/${encodeURIComponent(userId)}/profile`;
+  const config = {
     method: 'get',
-    url: `${BASE_URL}/users/${encodeURIComponent(userId)}/profile`,
-    params: includeDetails !== undefined ? { includeDetails } : {},
+    url: url,
     headers: {
       'Accept': 'application/json',
     },
   };
+  if (includeDetails !== undefined && includeDetails !== null) {
+    config.params = { includeDetails };
+  }
+  return config;
 }
 
 function buildUpdateUserProfileRequest(userId, profileData) {
+  const url = `${BASE_URL}/users/${encodeURIComponent(userId)}/profile`;
   return {
     method: 'put',
-    url: `${BASE_URL}/users/${encodeURIComponent(userId)}/profile`,
+    url: url,
     data: profileData,
     headers: {
       'Content-Type': 'application/json',
