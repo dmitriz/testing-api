@@ -1,28 +1,25 @@
 const BASE_URL = 'https://api.example.com/v1';
 
 function buildGetUserProfileRequest(userId, includeDetails) {
-  let url = `${BASE_URL}/users/${encodeURIComponent(userId)}/profile`;
-  
-  // Append query parameters to the URL if includeDetails is provided and not null
-  if (includeDetails !== undefined && includeDetails !== null) {
-    // Ensure boolean is converted to lowercase string for API compatibility
-    const includeDetailsStr = typeof includeDetails === 'boolean' ? String(includeDetails).toLowerCase() : includeDetails;
-    url += `?includeDetails=${encodeURIComponent(includeDetailsStr)}`;
-  }
-  
-  return {
+  const url = `${BASE_URL}/users/${encodeURIComponent(userId)}/profile`;
+  const config = {
     method: 'get',
     url: url,
     headers: {
       'Accept': 'application/json',
     },
   };
+  if (includeDetails !== undefined && includeDetails !== null) {
+    config.params = { includeDetails };
+  }
+  return config;
 }
 
 function buildUpdateUserProfileRequest(userId, profileData) {
+  const url = `${BASE_URL}/users/${encodeURIComponent(userId)}/profile`;
   return {
     method: 'put',
-    url: `${BASE_URL}/users/${encodeURIComponent(userId)}/profile`,
+    url: url,
     data: profileData,
     headers: {
       'Content-Type': 'application/json',
