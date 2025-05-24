@@ -49,7 +49,7 @@
 
 * `api-spec.yaml`
 * `src/request-builder.js`
-* `tests/request-builder.contract.test.js`
+* `src/request-builder.contract.test.js`
 * `package.json`
 
 ### 4.3. File Content and Explanation
