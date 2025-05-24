@@ -1,10 +1,16 @@
 const BASE_URL = 'https://api.example.com/v1';
 
 function buildGetUserProfileRequest(userId, includeDetails) {
+  let url = `${BASE_URL}/users/${encodeURIComponent(userId)}/profile`;
+  
+  // Append query parameters to the URL if includeDetails is provided
+  if (includeDetails !== undefined) {
+    url += `?includeDetails=${includeDetails}`;
+  }
+  
   return {
     method: 'get',
-    url: `${BASE_URL}/users/${encodeURIComponent(userId)}/profile`,
-    params: includeDetails !== undefined ? { includeDetails } : {},
+    url: url,
     headers: {
       'Accept': 'application/json',
     },
