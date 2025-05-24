@@ -5,7 +5,9 @@ function buildGetUserProfileRequest(userId, includeDetails) {
   
   // Append query parameters to the URL if includeDetails is provided and not null
   if (includeDetails !== undefined && includeDetails !== null) {
-    url += `?includeDetails=${encodeURIComponent(includeDetails)}`;
+    // Ensure boolean is converted to lowercase string for API compatibility
+    const includeDetailsStr = typeof includeDetails === 'boolean' ? String(includeDetails).toLowerCase() : includeDetails;
+    url += `?includeDetails=${encodeURIComponent(includeDetailsStr)}`;
   }
   
   return {

@@ -21,6 +21,7 @@ describe('Request Builder Contract Tests', () => {
     });});
 
   // Helper function to identify the operation and validate the request
+// sourcery skip: avoid-function-declarations-in-blocks
   function validateRequestAgainstSchema(reqObj) {
     // Use the server URL from the OpenAPI definition as a base for parsing reqObj.url
     // This handles both relative and absolute URLs in reqObj.url.
